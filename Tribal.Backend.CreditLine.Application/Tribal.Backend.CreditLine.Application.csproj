@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tribal.Backend.CreditLine.Domain\Tribal.Backend.CreditLine.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
