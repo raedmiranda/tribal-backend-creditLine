@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Tribal.Backend.CreditLine.Domain.Intefaces;
 
 namespace Tribal.Backend.CreditLine.Infrastructure.DataRepositories
 {
-    public class Repository<T>: IRepository<T> where T : class
+    public class Repository<T> : IRepository<T> where T : class
     {
         protected List<T> _context;
 

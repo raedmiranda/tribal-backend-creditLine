@@ -33,6 +33,11 @@ namespace Tribal.Backend.CreditLine.Application
                                                          && log.CreatedAt <= requestTime.AddMilliseconds(timeValidator))
                                                .ToList();
                 response = requestList.Count >= countValidator;
+
+                // after failing 3 times, return customized message 'Sales Agent...',
+                // so don't stop here, let it continue.
+                // If first time (count zero), obviously TooManyRequest is false
+                response = lastApplicationWasAccepted ? response : requestList.Count < 3 && requestList.Count > 0;
             }
             catch (Exception ex)
             {
@@ -48,16 +53,20 @@ namespace Tribal.Backend.CreditLine.Application
 
             try
             {
-                Guid customerId = Guid.Parse(credential);
-                item = new UserRequest()
+                if (creditLineRequest != null)
                 {
-                    Guid = Guid.NewGuid(),
-                    CreatedAt = creditLineRequest.RequestedDate,
-                    CustomerId = customerId,
-                    Request = creditLineRequest,
-                    RequestType = "DETERMINECREDITLINE"
-                };
-                _userLogRepository.Insert(item);
+                    Guid customerId = Guid.Parse(credential);
+                    item = new UserRequest()
+                    {
+                        Guid = Guid.NewGuid(),
+                        CreatedAt = creditLineRequest.RequestedDate,
+                        CustomerId = customerId,
+                        Request = creditLineRequest,
+                        RequestType = "DETERMINECREDITLINE"
+                    };
+                    _userLogRepository.Insert(item);
+
+                }
             }
             catch (Exception ex)
             {
