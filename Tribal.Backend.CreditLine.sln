@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tribal.Backend.CreditLine.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tribal.Backend.CreditLine.WebAPI.Test", "Tribal.Backend.CreditLine.WebAPI.Test\Tribal.Backend.CreditLine.WebAPI.Test.csproj", "{1F74CAAD-9A21-4273-BA81-179A53525B74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tribal.Backend.CreditLine.Infrastructure", "Tribal.Backend.CreditLine.Infrastructure\Tribal.Backend.CreditLine.Infrastructure.csproj", "{63C2BFE2-8D6B-4A0B-BDC0-FCDB60ACD0D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1F74CAAD-9A21-4273-BA81-179A53525B74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F74CAAD-9A21-4273-BA81-179A53525B74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F74CAAD-9A21-4273-BA81-179A53525B74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63C2BFE2-8D6B-4A0B-BDC0-FCDB60ACD0D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C2BFE2-8D6B-4A0B-BDC0-FCDB60ACD0D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C2BFE2-8D6B-4A0B-BDC0-FCDB60ACD0D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C2BFE2-8D6B-4A0B-BDC0-FCDB60ACD0D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

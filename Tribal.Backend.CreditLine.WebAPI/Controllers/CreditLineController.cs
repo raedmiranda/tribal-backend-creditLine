@@ -13,16 +13,20 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
     public class CreditLineController : ControllerBase
     {
         CreditLineRequestService _creditLineService;
-        public CreditLineController(CreditLineRequestService creditLineService)
+        UserLogService _userLogService;
+
+        public CreditLineController(CreditLineRequestService creditLineService, UserLogService userLogService)
         {
             _creditLineService = creditLineService;
+            _userLogService = userLogService;
         }
 
-        public ActionResult<ObjectResponse<CreditLineResponseModel>> DetermineCreditLine(CreditLineRequestModel creditLineRequest)
+        public ActionResult<ObjectResponse<CreditLineResponseModel>> DetermineCreditLine(CreditLineRequestModel creditLineRequest, [FromHeader(Name = "credential")] string credential)
         {
             ActionResult<ObjectResponse<CreditLineResponseModel>> result = null;
             ObjectResponse<CreditLineResponseModel> response = new ObjectResponse<CreditLineResponseModel>();
             CreditLineResponseModel serviceResponse = null;
+
             try
             {
                 response.DataRequest = creditLineRequest;
@@ -41,7 +45,40 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
                 }
                 else
                 {
-                    serviceResponse = _creditLineService.DetermineCreditLine(creditLineRequest);
+                    CreditLineResponseModel actualCreditLine = _creditLineService.ObtainConsumerCreditLine(credential);
+                    bool lastAttemptWasSuccessful = actualCreditLine != null && actualCreditLine.IsAccepted;
+                    bool areTooManyRequest = _userLogService.CheckAttemptCounter(credential, creditLineRequest.RequestedDate, lastAttemptWasSuccessful);
+
+                    if (lastAttemptWasSuccessful && areTooManyRequest)
+                    {
+                        serviceResponse = null;
+                        // response null - result 429
+                    }
+                    else if (lastAttemptWasSuccessful && !areTooManyRequest)
+                    {
+                        serviceResponse = actualCreditLine;
+                        // response actual - result OK
+                    }
+                    else if (!lastAttemptWasSuccessful && areTooManyRequest)
+                    {
+                        serviceResponse = null;
+                        // response null - result 429
+                    }
+                    else if (!lastAttemptWasSuccessful && !areTooManyRequest)
+                    {
+                        bool checkRejectedAttempts = _creditLineService.CheckRejectedApplications(credential);
+
+                        if (checkRejectedAttempts)
+                            throw new UnauthorizedAccessException();
+                            // response null - result "Agent"
+                        else
+                        {
+                            serviceResponse = _creditLineService.DetermineCreditLine(creditLineRequest);
+                            _creditLineService.SaveConsumerCreditLine(serviceResponse, credential, creditLineRequest.RequestedDate);
+                        }
+                    }
+
+
                     if (serviceResponse != null)
                     {
                         response.DataResponse = serviceResponse;
@@ -50,6 +87,7 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
                             Message = "Information credit line performed!",
                             Status = "OK"
                         };
+                        result = Ok(response);
                     }
                     else
                     {
@@ -58,17 +96,20 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
                             Message = "Credit line information can't be done!",
                             Status = "KO"
                         };
-                    }
-
-                    if (response.StatusResponse.Status == "OK")
-                    {
-                        result = Ok(response);
-                    }
-                    else
-                    {
                         result = BadRequest(response);
                     }
                 }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                response.DataResponse = null;
+                response.StatusResponse = new StatusResponse()
+                {
+                    Message = "A sales agent will contact you.",
+                    Status = "KO"
+                };
+
+                result = StatusCode(StatusCodes.Status429TooManyRequests, response);
             }
             catch (Exception ex)
             {
@@ -81,6 +122,10 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
 
                 if (Response != null) Response.StatusCode = StatusCodes.Status500InternalServerError;
                 result = StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
+            finally
+            {
+                if (creditLineRequest != null) _userLogService.SaveRequest(creditLineRequest, credential);
             }
 
             return result;
