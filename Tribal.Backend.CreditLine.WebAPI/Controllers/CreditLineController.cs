@@ -70,7 +70,7 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
 
                         if (checkRejectedAttempts)
                             throw new UnauthorizedAccessException();
-                            // response null - result "Agent"
+                        // response null - result "Agent"
                         else
                         {
                             serviceResponse = _creditLineService.DetermineCreditLine(creditLineRequest);
@@ -96,7 +96,7 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
                             Message = "Credit line information can't be done!",
                             Status = "KO"
                         };
-                        result = BadRequest(response);
+                        result = areTooManyRequest ? StatusCode(StatusCodes.Status429TooManyRequests, response) : BadRequest(response);
                     }
                 }
             }
@@ -125,7 +125,7 @@ namespace Tribal.Backend.CreditLine.WebAPI.Controllers
             }
             finally
             {
-                if (creditLineRequest != null) _userLogService.SaveRequest(creditLineRequest, credential);
+                _userLogService.SaveRequest(creditLineRequest, credential);
             }
 
             return result;
